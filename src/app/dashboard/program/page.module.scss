@@ -1,0 +1,136 @@
+@use "@/styles/utils" as *;
+@use "@/styles/modules" as *;
+
+
+.title {
+    text-align: center;
+    margin-bottom: 50px;
+    font-size: 30px;
+    font-weight: 600;
+}
+
+.tableContainer {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 2rem;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background-color: var(--color-white, #fff);
+}
+
+.quizTable {
+    width: 100%;
+    border-collapse: collapse;
+    
+    thead {
+        color: var(--color-white, #fff);
+        background-color: var(--color-primary);
+        
+        th {
+            padding: toRem(15) toRem(20);
+            text-align: center;
+            font-weight: 600;
+            font-size: toRem(16);
+            
+            &:first-child {
+                border-top-left-radius: 10px;
+            }
+            
+            &:last-child {
+                border-top-right-radius: 10px;
+            }
+        }
+    }
+    
+    tbody {
+        .tableRow {
+            border-bottom: 1px solid var(--color-border);
+            transition: background-color 0.3s;
+            
+            &:hover {
+                background-color: rgba(0, 0, 0, 0.02);
+            }
+            
+            &:last-child {
+                border-bottom: none;
+            }
+            
+            td {
+                padding: toRem(15) toRem(20);
+                font-size: toRem(14);
+                text-align: center;
+                
+                &.titleCell,
+                &.descriptionCell,
+                &.questionsCell {
+                    cursor: pointer;
+                    
+                    &:hover {
+                        color: var(--color-primary);
+                    }
+                }
+                
+                &.titleCell {
+                    font-weight: 600;
+                    color: var(--color-text, #333);
+                }
+                
+                &.descriptionCell {
+                    color: var(--color-text-secondary, #666);
+                    max-width: 400px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+                
+                &.questionsCell {
+                    text-align: center;
+                    color: var(--color-text, #333);
+                }
+                
+                &.actionsCell {
+                    text-align: center;
+                }
+            }
+        }
+    }
+}
+
+.editButton,
+.deleteButton {
+    display: inline-block;
+    padding: toRem(8) toRem(16);
+    border-radius: 5px;
+    background-color: var(--color-primary);
+    color: var(--color-white, #fff);
+    text-decoration: none;
+    transition: all 0.3s;
+    font-size: toRem(14);
+    cursor: pointer;
+    border: none;
+    
+    &:hover {
+        background-color: var(--color-light-purple);
+        transform: translateY(-1px);
+    }
+}
+
+.deleteButton {
+    background-color: var(--color-red);
+    
+    &:hover {
+        background-color: #c82333;
+    }
+}
+
+.noQuiz {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.buttonWrapper {
+    text-align: right;
+    margin-bottom: toRem(50);
+}

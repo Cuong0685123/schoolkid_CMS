@@ -1,0 +1,12 @@
+@mixin respond-unmobile() {
+	@media (min-width: 700px) {
+		@content;
+	}
+}
+
+
+@mixin respond-mobile() {
+	@media (max-width: 700px) {
+		@content;
+	}
+}

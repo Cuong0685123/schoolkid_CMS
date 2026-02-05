@@ -1,0 +1,30 @@
+@use "@/styles/utils" as *;
+@use "@/styles/modules";
+
+.add {
+    background-color: var(--color-primary);
+    border: none;
+    padding: toRem(12) toRem(20);
+    font-size: toRem(16);
+    color: #fff;
+    transition: all 0.3s;
+    border-radius: 5px;
+
+    &:hover {
+        background-color: var(--color-light-purple);
+    }
+}
+
+.delete {
+    background-color: var(--color-red);
+    border: none;
+    padding: toRem(12) toRem(20);
+    font-size: toRem(16);
+    color: #fff;
+    transition: all 0.3s;
+    border-radius: 5px;
+
+    &:hover {
+        background-color: var(--color-dark-red);
+    }
+}

@@ -1,0 +1,156 @@
+@use "utils" as *;
+
+:root {
+    // variable color
+    --color-primary: #4F46E5;
+    --color-blue: #3B82F6;
+    --color-secondary: #22C55E;
+    --color-accent: #FACC15;
+    --color-background: #F9FAFB;
+    --color-sidebar: #1E293B;
+    --color-text: #111827;
+    --color-border: #E5E7EB;
+    --color-white: #FFFFFF;
+    --color-red: #EF4444;
+    --color-dark-red: #B91C1C;
+    --color-green: #22C55E;
+    --color-light-purple: #6366F1;
+    --color-black: #000000;
+    --color-error: #DC2626;
+
+    // variable dont need to change
+    --main-width: 1340px;
+    --content-width: 1220px;
+    --subcontent-width: 1000px;
+
+    --spacing-small: 21px;
+
+    //variable font weight
+    --font-light: 300;
+
+    // variable need to responsive
+    --fontsize-small: 12px;
+
+    --fontsize-bigger-mobile: 30px;
+    --fontsize-big-mobile: 17px;
+
+    // padding variable
+    --padding-small: 12px;
+    --padding-medium: 24px;
+
+
+
+
+    // variable spacing
+    --spacing-big: 80px;
+
+
+
+    @include respond-mobile() {
+        --fontsize-normal: 16px;
+    }
+}
+
+
+html,
+body {
+    scroll-behavior: smooth;
+    /* Optional: for smooth scrolling */
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-size: var(--fontsize-normal);
+    line-height: 1.4;
+}
+
+h2 {
+    font-size: var(--fontsize-large);
+    font-weight: var(--font-semibold);
+    text-transform: uppercase;
+}
+
+h3 {
+    font-size: var(--fontsize-large);
+    font-weight: var(--font-semibold);
+}
+
+h4 {
+    font-size: var(----fontsize-small);
+    font-weight: var(--font-semibold);
+}
+
+
+/* For WebKit-based browsers (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+    width: 5px;
+    /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #00310E;
+    /* Color of the scrollbar handle */
+    /* Optional: Rounded corners */
+}
+
+::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    /* Background of the scrollbar track */
+}
+
+
+body[popup="true"] {
+    overflow: hidden;
+}
+
+a {
+    color: #4D4D4D;
+    text-decoration: none;
+    transition: all 0.3s;
+
+    &:hover {
+        color: var(--color-light-green);
+    }
+}
+
+li {
+    .navCTA {
+        padding: var(--padding-small) var(--padding-medium);
+        background-color: var(--color-light-green);
+        color: var(--color-white);
+        border-radius: 5px;
+        transition: all 0.3s;
+        
+        &:hover {
+            background-color: #2f9e44;
+        }
+    }
+}
+
+.dashboard {
+    position: relative;
+    margin-left: 250px;
+    height: 100vh;
+    padding-inline: 20px;
+}
+
+.title {
+    text-align: center;
+    margin-bottom: 50px;
+    font-size: 30px;
+    font-weight: 600;
+}
+
+.loading {
+    position: fixed;
+    inset: 0; // top:0 right:0 bottom:0 left:0
+    background: rgba(255, 255, 255, 0.7);
+    z-index: 9999;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center
+}

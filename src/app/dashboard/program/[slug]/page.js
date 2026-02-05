@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Button, Form, Input, Select, Space } from 'antd';
 const { TextArea } = Input;
 import { Spin } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 
 const layout = {
     labelCol: { span: 8 },
@@ -72,12 +73,21 @@ export default function ProgramDetail() {
         form.resetFields();
     };
 
+    const onBack = () => {
+        router.back();
+    };
+
     return (
         <>
-            {loading && <Spin fullscreen/>}
-            <div className="dashboard">
-                <h1 className="title">{programData?.name ?? ""}</h1>
 
+            {loading && <Spin fullscreen />}
+            <div className="dashboard">
+                <div className={"dashboard-header"}>
+                    <Button icon={<ArrowLeftOutlined />} htmlType="button" onClick={onBack} color="purple" variant="outlined">
+                        Back
+                    </Button>
+                    <h1 className="title">{programData?.name ?? ""}</h1>
+                </div>
                 <div className={styles.formContainer}>
                     <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} style={{ maxWidth: 600 }}>
                         <Form.Item name="name" label="Name" rules={[{ required: true }]}>
@@ -109,7 +119,7 @@ export default function ProgramDetail() {
                         </Form.Item>
                         <Form.Item {...tailLayout}>
                             <Space>
-                                <Button  htmlType="submit" color="purple" variant="solid">
+                                <Button htmlType="submit" color="purple" variant="solid">
                                     Submit
                                 </Button>
                                 <Button htmlType="button" onClick={onReset} color="purple" variant="outlined">

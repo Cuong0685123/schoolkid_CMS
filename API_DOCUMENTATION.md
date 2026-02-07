@@ -368,4 +368,3 @@ thumbnailFile: file (required, maxCount: 1)
 - **Email Format:** Email phải đúng format: `xxx@xxx.xxx`
 - **Phone Format:** Số điện thoại phải đúng format Việt Nam: `0xxxxxxxxx` hoặc `+84xxxxxxxxx` (9 số)
 - **Enum Values:** Field `type` trong Program chỉ nhận giá trị: `'edu'`, `'sport'`, `'teacher'`
-

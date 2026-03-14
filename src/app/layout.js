@@ -1,6 +1,5 @@
 import { Inter } from 'next/font/google';
 import '@/styles/all.scss';
-import Navbar from '@/components/navbar';
 import styles from './page.module.scss';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 
@@ -12,16 +11,13 @@ const inter = Inter({
 
 export const metadata = {
   title: "Schoolkid_cms",
-  description: "",
-  icons: {
-    icon: '/images/favicon.ico'
-  }
+  icons: { icon: '/images/favicon.ico' }
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={inter.className}>
-      <body>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
         <AntdRegistry>
           <div className={styles.wrapper}>
             {children}

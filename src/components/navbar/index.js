@@ -15,6 +15,12 @@ export default function Index(params) {
                 { name: 'List Programs', href: '/dashboard/program' },
             ],
         },
+        {
+            title: 'Application',
+            links: [
+                { name: 'List Applications', href: '/dashboard/application' },
+            ],
+        }
     ];
     return (
         <>
@@ -30,19 +36,22 @@ export default function Index(params) {
                                 className={clsx(styles.sideItem, openIndex === index && styles.active)}
                                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
                             >
-                                <Link href="#">
-                                    <Image
-                                        src="/svg/arrow-left-angle.svg"
-                                        alt="arrow"
-                                        width={16}
-                                        height={16}
-                                        className={styles.arrowIcon}
-                                    />
-                                    {item.title}
-                                </Link>
-
+                                        <Link href="#">
+                                {
+                                    item.links && item.links.length > 0 && (
+                                            <Image
+                                                src="/svg/arrow-left-angle.svg"
+                                                alt="arrow"
+                                                width={16}
+                                                height={16}
+                                                className={styles.arrowIcon}
+                                            />
+                                        )
+                                    }
+                                            {item.title}
+                                        </Link>
                                 <ul className={styles.subList}>
-                                    {item.links.map((sub, index) => (
+                                    {item.links && item.links.length > 0 && item.links.map((sub, index) => (
                                         <li key={index}>
                                             <Link href={sub.href}>{sub.name}</Link>
                                         </li>

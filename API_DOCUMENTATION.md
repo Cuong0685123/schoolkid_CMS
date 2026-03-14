@@ -209,7 +209,7 @@
   "duration_days": "string (optional)",
   "duration_hours": "string (optional)",
   "slug": "string (optional)"
-}
+} 
 ```
 
 ### POST `/api/programs/sport` - Tạo chương trình thể thao

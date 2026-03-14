@@ -1,25 +1,28 @@
 'use client';
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import styles from './page.module.scss';
 import { getProgramById, updateProgram } from '@/services/programService';
 // import Button from '@/components/button';
 import { useRouter } from 'next/navigation';
-import { Button, Form, Input, Select, Space, Card, Typography } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
+import { Button, Form, Input, Select, Space, Card, Typography, Upload } from 'antd';
+import { CloseOutlined, UploadOutlined } from '@ant-design/icons';
 import { Spin } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
+import { getAllProgramEducations } from '@/services/programEducationService';
 const { TextArea } = Input;
 
 const layout = {
-    labelCol: { offset: 0, span: 4 },
-    wrapperCol: { offset: 0, span: 16 },
+    labelCol: { span: 6 },
+    wrapperCol: { span: 18 },
 };
 const tailLayout = {
     wrapperCol: { offset: 8, span: 16 },
 };
 
 export default function ProgramDetail() {
+    const [formProgram] = Form.useForm();
+    const [formProgramEducation] = Form.useForm();
     const router = useRouter();
     const { slug } = useParams();
     const [loading, setLoading] = useState(false);
@@ -29,36 +32,44 @@ export default function ProgramDetail() {
         type: '',
     });
 
-    const fetchProgram = async () => {
+    const fetchProgram = useCallback(async () => {
         setLoading(true);
         const program = await getProgramById(slug);
         console.log("program: ", program);
         setProgramData(program);
 
-        form.setFieldsValue({
+        formProgram.setFieldsValue({
             name: program.name,
             description: program.description,
             type: program.type,
         });
+
+        formProgramEducation.setFieldsValue({
+            items: program.ProgramEdus || [],
+        });
         setLoading(false);
+    }, [slug, formProgram, formProgramEducation]);
+
+    const fetchProgramEducation = async () => {
+        const programEducation = await getAllProgramEducations();
+        console.log("programEducation: ", programEducation);
     };
 
     useEffect(() => {
         fetchProgram();
-    }, [slug]);
+    }, [fetchProgram]);
 
     // 
-    const [form] = Form.useForm();
     const onTypeChange = value => {
         switch (value) {
             case 'edu':
-                form.setFieldsValue({ type: 'edu' });
+                formProgram.setFieldsValue({ type: 'edu' });
                 break;
             case 'sport':
-                form.setFieldsValue({ type: 'sport' });
+                formProgram.setFieldsValue({ type: 'sport' });
                 break;
             case 'teacher':
-                form.setFieldsValue({ type: 'teacher' });
+                formProgram.setFieldsValue({ type: 'teacher' });
                 break;
             default:
         }
@@ -71,11 +82,19 @@ export default function ProgramDetail() {
         router.push(`/dashboard/program`);
     };
     const onReset = () => {
-        form.resetFields();
+        formProgram.resetFields();
+        formProgramEducation.resetFields();
     };
 
     const onBack = () => {
         router.back();
+    };
+
+    const normFile = (e) => {
+        if (Array.isArray(e)) {
+            return e;
+        }
+        return e?.fileList ?? [];
     };
 
     return (
@@ -89,7 +108,7 @@ export default function ProgramDetail() {
                     <h1 className="title">{programData?.name ?? ""}</h1>
                 </div>
                 <div className={styles.formContainer}>
-                    <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} style={{ maxWidth: 600, textAlign: 'left' }}>
+                    <Form {...layout} form={formProgram} name="control-hooks" onFinish={onFinish} style={{ maxWidth: 600, textAlign: 'left' }}>
                         <Form.Item name="name" label="Name" rules={[{ required: true }]} style={{ textAlign: 'left' }}>
                             <Input />
                         </Form.Item>
@@ -117,7 +136,7 @@ export default function ProgramDetail() {
                                 ) : null
                             }
                         </Form.Item>
-                        <Form.Item {...tailLayout}>
+                        <Form.Item wrapperCol={{ offset: 6, span: 18 }} style={{ textAlign: 'left' }}>
                             <Space>
                                 <Button htmlType="submit" color="purple" variant="solid">
                                     Submit
@@ -134,7 +153,7 @@ export default function ProgramDetail() {
                     <Form
                         labelCol={{ span: 6 }}
                         wrapperCol={{ span: 18 }}
-                        form={form}
+                        form={formProgramEducation}
                         name="dynamic_form_complex"
                         style={{ maxWidth: 600 }}
                         autoComplete="off"
@@ -146,7 +165,7 @@ export default function ProgramDetail() {
                                     {fields.map((field) => (
                                         <Card
                                             size="small"
-                                            title={`Item ${field.name + 1}`}
+                                            title={`Program ${field.name + 1}`}
                                             key={field.key}
                                             extra={
                                                 <CloseOutlined
@@ -156,36 +175,55 @@ export default function ProgramDetail() {
                                                 />
                                             }
                                         >
-                                            <Form.Item label="Name" name={[field.name, 'name']}>
+                                            {/* Program Title */}
+                                            <Form.Item label="Title" name={[field.name, 'title']}>
                                                 <Input />
                                             </Form.Item>
 
-                                            {/* Nest Form.List */}
-                                            <Form.Item label="List">
-                                                <Form.List name={[field.name, 'list']}>
-                                                    {(subFields, subOpt) => (
-                                                        <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
-                                                            {subFields.map((subField) => (
-                                                                <Space key={subField.key}>
-                                                                    <Form.Item noStyle name={[subField.name, 'first']}>
-                                                                        <Input placeholder="first" />
-                                                                    </Form.Item>
-                                                                    <Form.Item noStyle name={[subField.name, 'second']}>
-                                                                        <Input placeholder="second" />
-                                                                    </Form.Item>
-                                                                    <CloseOutlined
-                                                                        onClick={() => {
-                                                                            subOpt.remove(subField.name);
-                                                                        }}
-                                                                    />
-                                                                </Space>
-                                                            ))}
-                                                            <Button type="dashed" onClick={() => subOpt.add()} block>
-                                                                + Add Sub Item
-                                                            </Button>
-                                                        </div>
-                                                    )}
-                                                </Form.List>
+                                            {/* Program Detail */}
+                                            <Form.Item label="Detail" name={[field.name, 'detail']}>
+                                                <Input />
+                                            </Form.Item>
+
+                                            {/* Program Age Group */}
+                                            <Form.Item label="Age Group" name={[field.name, 'age_group']}>
+                                                <Input />
+                                            </Form.Item>
+
+                                            {/* Program Age Group */}
+                                            <Form.Item label="Duration Days" name={[field.name, 'duration_days']}>
+                                                <Input />
+                                            </Form.Item>
+
+                                            {/* Program Age Group */}
+                                            <Form.Item label="Duration Hours" name={[field.name, 'duration_hours']}>
+                                                <Input />
+                                            </Form.Item>
+
+                                            <Form.Item
+                                                name={[field.name, 'thumbnail_url']}
+                                                label="Upload"
+                                                valuePropName="file"
+                                                getValueFromEvent={normFile}
+                                            >
+                                                <Upload
+                                                    action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
+                                                    listType="picture"
+                                                    maxCount={1}
+                                                >
+                                                    <Button icon={<UploadOutlined />}>Upload (Max: 1)</Button>
+                                                </Upload>
+                                            </Form.Item>
+
+                                            <Form.Item
+                                                wrapperCol={{ offset: 6, span: 18 }}
+                                                style={{ textAlign: 'left' }}
+                                            >
+                                                <Space>
+                                                    <Button htmlType="submit" color="purple" variant="solid">
+                                                        Submit
+                                                    </Button>
+                                                </Space>
                                             </Form.Item>
                                         </Card>
                                     ))}
@@ -200,7 +238,7 @@ export default function ProgramDetail() {
                         <Form.Item noStyle shouldUpdate>
                             {() => (
                                 <Typography>
-                                    <pre>{JSON.stringify(form.getFieldsValue(), null, 2)}</pre>
+                                    <pre>{JSON.stringify(formProgram.getFieldsValue(), null, 2)}</pre>
                                 </Typography>
                             )}
                         </Form.Item>

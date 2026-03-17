@@ -20,7 +20,31 @@ export default function Index(params) {
             links: [
                 { name: 'List Applications', href: '/dashboard/application' },
             ],
-        }
+        },
+        {
+            title: 'Comment',
+            links: [
+                { name: 'List Comments', href: '/dashboard/comment' },
+            ],
+        },
+        {
+            title: 'News Article',
+            links: [
+                { name: 'List News Articles', href: '/dashboard/news-article' },
+            ],
+        },
+        {
+            title: 'Newsletter',
+            links: [
+                { name: 'List Newsletters', href: '/dashboard/newsletter' },
+            ],
+        },
+        {
+            title: 'Promotional Video',
+            links: [
+                { name: 'List Promotional Videos', href: '/dashboard/promotional-video' },
+            ],
+        },
     ];
     return (
         <>

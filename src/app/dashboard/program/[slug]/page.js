@@ -2,22 +2,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import styles from './page.module.scss';
-import { getProgramById, updateProgram } from '@/services/programService';
-// import Button from '@/components/button';
+import { createProgramEducation, getProgramById, updateProgram, updateProgramEducation } from '@/services/programService';
 import { useRouter } from 'next/navigation';
 import { Button, Form, Input, Select, Space, Card, Typography, Upload } from 'antd';
 import { CloseOutlined, UploadOutlined } from '@ant-design/icons';
 import { Spin } from 'antd';
-import { ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
-import { getAllProgramEducations } from '@/services/programEducationService';
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import { notification } from 'antd';
 const { TextArea } = Input;
 
 const layout = {
     labelCol: { span: 6 },
     wrapperCol: { span: 18 },
-};
-const tailLayout = {
-    wrapperCol: { offset: 8, span: 16 },
 };
 
 export default function ProgramDetail() {
@@ -50,16 +46,11 @@ export default function ProgramDetail() {
         setLoading(false);
     }, [slug, formProgram, formProgramEducation]);
 
-    const fetchProgramEducation = async () => {
-        const programEducation = await getAllProgramEducations();
-        console.log("programEducation: ", programEducation);
-    };
-
     useEffect(() => {
         fetchProgram();
     }, [fetchProgram]);
 
-    // 
+    // change program type
     const onTypeChange = value => {
         switch (value) {
             case 'edu':
@@ -74,6 +65,7 @@ export default function ProgramDetail() {
             default:
         }
     };
+    // submit program
     const onFinish = async values => {
         setLoading(true);
         await updateProgram(slug, values);
@@ -81,14 +73,19 @@ export default function ProgramDetail() {
         setLoading(false);
         router.push(`/dashboard/program`);
     };
+
+    // reset form
     const onReset = () => {
         formProgram.resetFields();
         formProgramEducation.resetFields();
     };
 
+    // back to program list
     const onBack = () => {
         router.back();
     };
+
+
 
     const normFile = (e) => {
         if (Array.isArray(e)) {
@@ -97,6 +94,34 @@ export default function ProgramDetail() {
         return e?.fileList ?? [];
     };
 
+    // submit program education
+    const handleSubmitItem = async (index) => {
+        const values = formProgramEducation.getFieldValue('items');
+        const item = values[index];
+        setLoading(true);
+
+        if (item.id) {
+            // update Education
+            await updateProgramEducation(item.id, item);
+            await fetchProgram();
+            notification.success({
+                title: 'Success',
+                description: 'Program education updated successfully',
+            });
+        } else {
+            // create Education
+            const createdItem = {
+                ...item,
+                program_id: programData.id,
+            }
+            await createProgramEducation(createdItem);
+            await fetchProgram();
+            notification.success({
+                title: 'Success',
+                description: 'Program education created successfully',
+            });
+        }
+    };
     return (
         <>
             {loading && <Spin fullscreen />}
@@ -220,7 +245,7 @@ export default function ProgramDetail() {
                                                 style={{ textAlign: 'left' }}
                                             >
                                                 <Space>
-                                                    <Button htmlType="submit" color="purple" variant="solid">
+                                                    <Button color="purple" variant="solid" onClick={() => handleSubmitItem(field.name)}>
                                                         Submit
                                                     </Button>
                                                 </Space>
@@ -244,11 +269,6 @@ export default function ProgramDetail() {
                         </Form.Item>
                     </Form>
                 </div>
-
-                {/* CTA */}
-                {/* <div className={styles.ctaContainer}>
-                <button className={styles.ctaSave}>save</button>
-            </div> */}
             </div>
         </>
     );

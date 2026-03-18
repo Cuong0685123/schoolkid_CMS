@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import styles from './page.module.scss';
-import { createProgramEducation, getProgramById, updateProgram, updateProgramEducation } from '@/services/programService';
+import { createProgramEducation, deleteProgramEducation, getProgramById, updateProgram, updateProgramEducation } from '@/services/programService';
 import { useRouter } from 'next/navigation';
 import { Button, Form, Input, Select, Space, Card, Typography, Upload } from 'antd';
 import { CloseOutlined, UploadOutlined } from '@ant-design/icons';
@@ -122,6 +122,20 @@ export default function ProgramDetail() {
             });
         }
     };
+
+    // delete program education
+    const handleDeleteItem = async (id) => {
+        const values = formProgramEducation.getFieldValue('items');
+        const item = values[index];
+        setLoading(true);
+        await deleteProgramEducation(item.id);
+        await fetchProgram();
+        notification.success({
+            title: 'Success',
+            description: 'Program education deleted successfully',
+        });
+    }
+    // remove program education
     return (
         <>
             {loading && <Spin fullscreen />}
@@ -194,9 +208,7 @@ export default function ProgramDetail() {
                                             key={field.key}
                                             extra={
                                                 <CloseOutlined
-                                                    onClick={() => {
-                                                        remove(field.name);
-                                                    }}
+                                                    onClick={() => {handleDeleteItem(field.name);}}
                                                 />
                                             }
                                         >

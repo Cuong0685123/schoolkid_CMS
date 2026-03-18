@@ -69,3 +69,11 @@ export async function updateProgramEducation(id, programEducationData) {
     if (!res.ok) throw new Error('Failed to update program education');
     return res.json();
 }
+
+export async function deleteProgramEducation(id) {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}api/programs/education/${id}`, {
+        method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Failed to delete program education');
+    return res.json();
+}

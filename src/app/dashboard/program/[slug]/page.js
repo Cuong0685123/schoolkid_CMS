@@ -16,9 +16,124 @@ const layout = {
     wrapperCol: { span: 18 },
 };
 
+// Sport Form
+function SportForm({ field }) {
+    return (
+        <>
+            <Form.Item name={[field.name, 'title']} label="Title">
+                <Input />
+            </Form.Item>
+
+            <Form.Item name={[field.name, 'detail']} label="Detail">
+                <Input />
+            </Form.Item>
+
+            <Form.Item
+                name={[field.name, 'thumbnail_url']}
+                label="Upload"
+                valuePropName="file"
+                getValueFromEvent={() => {}}
+            >
+                <Upload
+                    action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
+                    listType="picture"
+                    maxCount={1}
+                >
+                    <Button icon={<UploadOutlined />}>Upload (Max: 1)</Button>
+                </Upload>
+            </Form.Item>
+        </>
+    );
+}
+
+// Education Form
+function EducationForm({ field }) {
+    return (
+        <>
+            {/* Program Title */}
+            <Form.Item label="Title" name={[field.name, 'title']}>
+                <Input />
+            </Form.Item>
+
+            {/* Program Detail */}
+            <Form.Item label="Detail" name={[field.name, 'detail']}>
+                <Input />
+            </Form.Item>
+
+            {/* Program Age Group */}
+            <Form.Item label="Age Group" name={[field.name, 'age_group']}>
+                <Input />
+            </Form.Item>
+
+            {/* Program Age Group */}
+            <Form.Item label="Duration Days" name={[field.name, 'duration_days']}>
+                <Input />
+            </Form.Item>
+
+            {/* Program Age Group */}
+            <Form.Item label="Duration Hours" name={[field.name, 'duration_hours']}>
+                <Input />
+            </Form.Item>
+
+            <Form.Item
+                name={[field.name, 'thumbnail_url']}
+                label="Upload"
+                valuePropName="file"
+                getValueFromEvent={() => {}}
+            >
+                <Upload
+                    action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
+                    listType="picture"
+                    maxCount={1}
+                >
+                    <Button icon={<UploadOutlined />}>Upload (Max: 1)</Button>
+                </Upload>
+            </Form.Item>
+        </>
+    );
+}
+
+// Teacher Form
+function TeacherForm({ field }) {
+    return (
+        <>
+            {/* Program Title */}
+            <Form.Item label="Title" name={[field.name, 'full_name']}>
+                <Input />
+            </Form.Item>
+
+            {/* Program Detail */}
+            <Form.Item label="Detail" name={[field.name, 'role']}>
+                <Input />
+            </Form.Item>
+
+            {/* Program Age Group */}
+            <Form.Item label="Age Group" name={[field.name, 'bio']}>
+                <Input />
+            </Form.Item>
+
+            <Form.Item
+                name={[field.name, 'profile_image_url']}
+                label="Upload"
+                valuePropName="file"
+                getValueFromEvent={() => {}}
+            >
+                <Upload
+                    action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
+                    listType="picture"
+                    maxCount={1}
+                >
+                    <Button icon={<UploadOutlined />}>Upload (Max: 1)</Button>
+                </Upload>
+            </Form.Item>
+        </>
+    );
+}
+
+
 export default function ProgramDetail() {
     const [formProgram] = Form.useForm();
-    const [formProgramEducation] = Form.useForm();
+    const [formDynamic] = Form.useForm();
     const router = useRouter();
     const { slug } = useParams();
     const [loading, setLoading] = useState(false);
@@ -40,11 +155,8 @@ export default function ProgramDetail() {
             type: program.type,
         });
 
-        formProgramEducation.setFieldsValue({
-            items: program.ProgramEdus || [],
-        });
         setLoading(false);
-    }, [slug, formProgram, formProgramEducation]);
+    }, [slug, formProgram]);
 
     useEffect(() => {
         fetchProgram();
@@ -77,12 +189,11 @@ export default function ProgramDetail() {
     // reset form
     const onReset = () => {
         formProgram.resetFields();
-        formProgramEducation.resetFields();
     };
 
     // back to program list
     const onBack = () => {
-        router.back();
+        router.push('/dashboard/program');
     };
 
 
@@ -96,7 +207,7 @@ export default function ProgramDetail() {
 
     // submit program education
     const handleSubmitItem = async (index) => {
-        const values = formProgramEducation.getFieldValue('items');
+        const values = formDynamic.getFieldValue('items');
         const item = values[index];
         setLoading(true);
 
@@ -124,18 +235,57 @@ export default function ProgramDetail() {
     };
 
     // delete program education
-    const handleDeleteItem = async (id) => {
-        const values = formProgramEducation.getFieldValue('items');
-        const item = values[index];
-        setLoading(true);
-        await deleteProgramEducation(item.id);
-        await fetchProgram();
-        notification.success({
-            title: 'Success',
-            description: 'Program education deleted successfully',
-        });
+    const handleDeleteItem = async (name) => {
+        console.log("name: ", name);
+        // const values = formProgramEducation.getFieldValue('items');
+        // const item = values[index];
+        // setLoading(true);
+        // await deleteProgramEducation(item.id);
+        // await fetchProgram();
+        // notification.success({
+        //     title: 'Success',
+        //     description: 'Program education deleted successfully',
+        // });
     }
-    // remove program education
+
+
+    const fieldConfig = {
+        edu: [
+            { label: 'Title', name: 'title' },
+            { label: 'Detail', name: 'detail' },
+            { label: 'Age Group', name: 'age_group' },
+            { label: 'Duration Days', name: 'duration_days' },
+            { label: 'Duration Hours', name: 'duration_hours' },
+            { label: 'Thumbnail', name: 'thumbnail_url' },
+        ],
+        sport: [
+            { label: 'Title', name: 'title' },
+            { label: 'Detail', name: 'detail' },
+            { label: 'Image', name: 'thumbnail_url' },
+        ],
+        teacher: [
+            { label: 'Full Name', name: 'full_name' },
+            { label: 'Bio', name: 'bio' },
+            { label: 'Role', name: 'role' },
+            { label: 'Image', name: 'profile_image_url' },
+        ],
+    };
+
+    const currentFields = fieldConfig[programData.type];
+    console.log("currentFields: ", currentFields);
+
+    useEffect(() => {
+        if (!programData?.type) return;
+    
+        formDynamic.setFieldsValue({
+            items:
+                programData.type === 'edu'
+                    ? programData.ProgramEdus || []
+                    : programData.type === 'sport'
+                    ? programData.ProgramSports || []
+                    : programData.ProgramTeachers || []
+        });
+    }, [programData, formDynamic]);
     return (
         <>
             {loading && <Spin fullscreen />}
@@ -192,7 +342,8 @@ export default function ProgramDetail() {
                     <Form
                         labelCol={{ span: 6 }}
                         wrapperCol={{ span: 18 }}
-                        form={formProgramEducation}
+                        // form={programData.type == 'edu' && formProgramEducation || programData.type == 'sport' && formProgramSport || programData.type == 'teacher' && formProgramTeacher}
+                        form={formDynamic}
                         name="dynamic_form_complex"
                         style={{ maxWidth: 600 }}
                         autoComplete="off"
@@ -208,60 +359,13 @@ export default function ProgramDetail() {
                                             key={field.key}
                                             extra={
                                                 <CloseOutlined
-                                                    onClick={() => {handleDeleteItem(field.name);}}
+                                                    onClick={() => { handleDeleteItem(field.name); }}
                                                 />
                                             }
                                         >
-                                            {/* Program Title */}
-                                            <Form.Item label="Title" name={[field.name, 'title']}>
-                                                <Input />
-                                            </Form.Item>
-
-                                            {/* Program Detail */}
-                                            <Form.Item label="Detail" name={[field.name, 'detail']}>
-                                                <Input />
-                                            </Form.Item>
-
-                                            {/* Program Age Group */}
-                                            <Form.Item label="Age Group" name={[field.name, 'age_group']}>
-                                                <Input />
-                                            </Form.Item>
-
-                                            {/* Program Age Group */}
-                                            <Form.Item label="Duration Days" name={[field.name, 'duration_days']}>
-                                                <Input />
-                                            </Form.Item>
-
-                                            {/* Program Age Group */}
-                                            <Form.Item label="Duration Hours" name={[field.name, 'duration_hours']}>
-                                                <Input />
-                                            </Form.Item>
-
-                                            <Form.Item
-                                                name={[field.name, 'thumbnail_url']}
-                                                label="Upload"
-                                                valuePropName="file"
-                                                getValueFromEvent={normFile}
-                                            >
-                                                <Upload
-                                                    action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
-                                                    listType="picture"
-                                                    maxCount={1}
-                                                >
-                                                    <Button icon={<UploadOutlined />}>Upload (Max: 1)</Button>
-                                                </Upload>
-                                            </Form.Item>
-
-                                            <Form.Item
-                                                wrapperCol={{ offset: 6, span: 18 }}
-                                                style={{ textAlign: 'left' }}
-                                            >
-                                                <Space>
-                                                    <Button color="purple" variant="solid" onClick={() => handleSubmitItem(field.name)}>
-                                                        Submit
-                                                    </Button>
-                                                </Space>
-                                            </Form.Item>
+                                            {programData.type === 'edu' && <EducationForm field={field} />}
+                                            {programData.type === 'sport' && <SportForm field={field} />}
+                                            {programData.type === 'teacher' && <TeacherForm field={field} />}
                                         </Card>
                                     ))}
 

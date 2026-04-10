@@ -4,6 +4,17 @@ import type { MenuModel } from '@/types';
 const AppMenu = () => {
     const model: MenuModel[] = [
         {
+            label: 'Programmes',
+            icon: 'pi pi-home',
+            items: [
+                {
+                    label: 'programs',
+                    icon: 'pi pi-fw pi-home',
+                    to: '/program'
+                },
+            ]
+        },
+        {
             label: 'Dashboards',
             icon: 'pi pi-home',
             items: [

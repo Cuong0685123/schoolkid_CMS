@@ -9,8 +9,8 @@ export const LayoutProvider = (props: ChildContainerProps) => {
     const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[]>([]);
     const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>({
         ripple: true,
-        inputStyle: 'outlined',
-        menuMode: 'slim',
+        inputStyle: 'filled',
+        menuMode: 'static',
         colorScheme: 'light',
         componentTheme: 'indigo',
         scale: 14,

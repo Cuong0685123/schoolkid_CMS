@@ -103,6 +103,19 @@ export default function ProgramDetail() {
         }));
     };
 
+    const handleSportChange = (
+        index: number,
+        field: keyof ProgramSport,
+        value: string
+    ) => {
+        setFormData(prev => ({
+            ...prev,
+            ProgramSports: prev.ProgramSports?.map((item, i) =>
+                i === index ? { ...item, [field]: value } : item
+            )
+        }));
+    };
+
 
     // useEffect(() => {
     //     console.log("formData: ", formData);
@@ -153,7 +166,7 @@ export default function ProgramDetail() {
     }
 
     // handle submit detail form
-    const handleDetailSubmit = async (e: any, index: number) => {
+    const handleDetailEducationSubmit = async (e: any, index: number) => {
         e.preventDefault();
         setLoading(true);
 
@@ -195,6 +208,51 @@ export default function ProgramDetail() {
                 summary: 'Error',
                 detail: 'Update detail thất bại'
             });
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDetailSportSubmit = async (e: any, index: number) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const sportId = formData.ProgramSports?.[index].id;
+            const sport = formData.ProgramSports?.[index];
+            const file = files[index];
+
+            const form = new FormData();
+            // append data
+            form.append('title', sport?.title || '');
+            form.append('detail', sport?.detail || '');
+            form.append('slug', sport?.slug || '');
+
+            if (file) {
+                form.append('thumbnail_url', file);
+            }
+
+            const res = await fetch(`http://localhost:8080/api/programs/sport/${sportId}`, {
+                method: 'PUT',
+                body: form // ❗ KHÔNG set Content-Type
+            });
+
+            if (!res.ok) throw new Error('Update failed');
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Update detail thành công'
+            });
+
+        } catch (error) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Update detail thất bại'
+            });
+
             console.error(error);
         } finally {
             setLoading(false);
@@ -250,7 +308,7 @@ export default function ProgramDetail() {
                             <div className="card p-fluid">
                                 <Toast ref={toast}></Toast>
                                 <h5>{education.title}</h5>
-                                <form onSubmit={(e) => { handleDetailSubmit(e, index) }}>
+                                <form onSubmit={(e) => { handleDetailEducationSubmit(e, index) }}>
 
                                     <div className="field">
                                         <label htmlFor="name">Title</label>
@@ -347,19 +405,19 @@ export default function ProgramDetail() {
                             <div className="card p-fluid">
                                 <Toast ref={toast}></Toast>
                                 <h5>{sport.title}</h5>
-                                <form onSubmit={(e) => {  }}>
+                                <form onSubmit={(e) => { handleDetailSportSubmit(e, index) }}>
 
                                     <div className="field">
                                         <label htmlFor="name">Title</label>
-                                        <InputText id="name" type="text" value={sport.title} onChange={(e) => {}} />
+                                        <InputText id="name" type="text" value={sport.title} onChange={(e) => {handleSportChange(index, "title", e.target.value)}} />
                                     </div>
                                     <div className="field">
                                         <label htmlFor="description">Detail</label>
-                                        <InputText id="description" type="text" value={sport.detail} onChange={(e) => {}} />
+                                        <InputText id="description" type="text" value={sport.detail} onChange={(e) => {handleSportChange(index, "detail", e.target.value)}} />
                                     </div>
                                     <div className="field">
                                         <label htmlFor="age_group">Slug</label>
-                                        <InputText id="age_group" type="text" value={sport.slug} onChange={(e) => {}} />
+                                        <InputText id="age_group" type="text" value={sport.slug} onChange={(e) => {handleSportChange(index, "slug", e.target.value)}} />
                                     </div>
                                     
                                     <div className="field">

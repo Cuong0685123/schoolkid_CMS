@@ -1,14 +1,17 @@
 'use client';
 import { useParams } from 'next/navigation';
 import { InputText } from 'primereact/inputtext';
-import { FileUpload } from 'primereact/fileupload';
-import { Toast } from 'primereact/toast';
 import { useEffect, useRef, useState } from 'react';
+import { Toast } from 'primereact/toast';
 import Image from 'next/image';
 import styles from './page.module.scss';
 import { Button } from 'primereact/button';
+import clsx from 'clsx';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { Dropdown } from 'primereact/dropdown';
 
 type ProgramEdu = {
+    id: number;
     program_id: number;
     title: string;
     detail: string;
@@ -26,11 +29,19 @@ type Program = {
     ProgramEdus?: ProgramEdu[];
 };
 
+const dropdownValues = [
+    { name: 'edu', code: 'edu' },
+    { name: 'sport', code: 'sport' },
+    { name: 'teacher', code: 'teacher' }
+];
+
 export default function ProgramDetail() {
     const params = useParams();
     const toast = useRef<Toast | null>(null);
     const [files, setFiles] = useState<any>({});
     const [previews, setPreviews] = useState<Record<number, string>>({});
+    const [loading, setLoading] = useState(false);
+    const [dropdownValue, setDropdownValue] = useState(null);
 
     const [formData, setFormData] = useState<Program>({
         name: '',
@@ -67,39 +78,155 @@ export default function ProgramDetail() {
         }));
     };
 
+    const handleEduChange = (
+        index: number,
+        field: keyof ProgramEdu,
+        value: string
+    ) => {
+        setFormData(prev => ({
+            ...prev,
+            ProgramEdus: prev.ProgramEdus?.map((item, i) =>
+                i === index ? { ...item, [field]: value } : item
+            )
+        }));
+    };
 
-    useEffect(() => {
-        console.log("formData: ", formData);
 
-    }, [formData]);
+    // useEffect(() => {
+    //     console.log("formData: ", formData);
+    //     console.log("type: ", formData.type);
 
-    const onUpload = () => {
-        toast.current?.show({
-            severity: 'info',
-            summary: 'Success',
-            detail: 'File Uploaded',
-            life: 3000
-        });
+    // }, [formData]);
+
+    // delete image in upload
+    const handleDeleteImage = (index: number) => {
+        setFiles((prev: any) => ({
+            ...prev,
+            [index]: null
+        }));
+
+        setPreviews((prev) => ({
+            ...prev,
+            [index]: ""
+        }));
+    }
+
+    // handle submit form
+    const handleGeneralSubmit = async (e: any) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const res = await fetch('http://localhost:8080/api/programs/' + params.id, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            console.log("res: ", res);
+
+            if (res.ok) {
+                toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Program updated successfully' });
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to update program' });
+            }
+        } catch (err) {
+            console.error(err);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to update program' });
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // handle submit detail form
+    const handleDetailSubmit = async (e: any, index: number) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const educationId = formData.ProgramEdus?.[index].id;
+            const edu = formData.ProgramEdus?.[index];
+            const file = files[index];
+
+            const form = new FormData();
+
+            // append data
+            form.append('title', edu?.title || '');
+            form.append('detail', edu?.detail || '');
+            form.append('age_group', edu?.age_group || '');
+            form.append('duration_days', edu?.duration_days || '');
+            form.append('duration_hours', edu?.duration_hours || '');
+
+            // append file nếu có
+            if (file) {
+                form.append('thumbnail_url', file);
+            }
+
+            const res = await fetch(`http://localhost:8080/api/programs/education/${educationId}`, {
+                method: 'PUT',
+                body: form // ❗ KHÔNG set Content-Type
+            });
+
+            if (!res.ok) throw new Error('Update failed');
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Update detail thành công'
+            });
+
+        } catch (error) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Update detail thất bại'
+            });
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <>
             <div className="col-12 md:col-12">
+                {
+                    loading && (
+                        <div className={styles.overlay}>
+                            <ProgressSpinner className={styles.loader} style={{ width: '50px', height: '50px' }} strokeWidth="8" animationDuration=".5s" />
+                        </div>
+                    )
+                }
                 <div className="card p-fluid">
                     <Toast ref={toast}></Toast>
                     <h5>Vertical</h5>
-                    <div className="field">
-                        <label htmlFor="name">Name</label>
-                        <InputText id="name" type="text" value={formData.name} onChange={handleChange} />
-                    </div>
-                    <div className="field">
-                        <label htmlFor="description">Description</label>
-                        <InputText id="description" type="text" value={formData.description} onChange={handleChange} />
-                    </div>
-                    <div className="field">
-                        <label htmlFor="type">Type</label>
-                        <InputText id="type" type="text" value={formData.type} onChange={handleChange} />
-                    </div>
+                    <form onSubmit={(e) => { handleGeneralSubmit(e) }}>
+                        <div className="field">
+                            <label htmlFor="name">Name</label>
+                            <InputText id="name" type="text" value={formData.name} onChange={handleChange} />
+                        </div>
+                        <div className="field">
+                            <label htmlFor="description">Description</label>
+                            <InputText id="description" type="text" value={formData.description} onChange={handleChange} />
+                        </div>
+                        <div className="field">
+                            <label htmlFor="type">Type</label>
+                            <Dropdown
+                                value={formData.type}
+                                onChange={(e) => setFormData(prev => ({
+                                    ...prev,
+                                    type: e.value
+                                }))}
+                                options={dropdownValues}
+                                optionLabel="name"
+                                optionValue="code"
+                                placeholder="Select"
+                            />
+                        </div>
+                        <Button type="submit" label="Submit" className={styles.buttonSubmit}></Button>
+                    </form>
                 </div>
             </div>
 
@@ -110,80 +237,89 @@ export default function ProgramDetail() {
                             <div className="card p-fluid">
                                 <Toast ref={toast}></Toast>
                                 <h5>{education.title}</h5>
-                                <div className="field">
-                                    <label htmlFor="name">Title</label>
-                                    <InputText id="name" type="text" value={education.title} onChange={handleChange} />
-                                </div>
-                                <div className="field">
-                                    <label htmlFor="description">Detail</label>
-                                    <InputText id="description" type="text" value={education.title} onChange={handleChange} />
-                                </div>
-                                <div className="field">
-                                    <label htmlFor="age_group">Age Group</label>
-                                    <InputText id="age_group" type="text" value={education.age_group} onChange={handleChange} />
-                                </div>
-                                <div className="field">
-                                    <label htmlFor="duration_days">Duration Days</label>
-                                    <InputText id="duration_days" type="text" value={education.duration_days} onChange={handleChange} />
-                                </div>
-                                <div className="field">
-                                    <label htmlFor="duration_hours">Duration Hours</label>
-                                    <InputText id="duration_hours" type="text" value={education.duration_hours} onChange={handleChange} />
-                                </div>
-                                <div className="field">
-                                    <label htmlFor="age1">Thumbnail</label>
-                                    <div className={styles.uploadContainer}>
-                                        <div className={styles.buttonsUpload}>
-                                            <input
-                                                id={`file-${index}`}
-                                                className={styles.hiddenInput}
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={(e) => {
-                                                    const file = e.target.files?.[0];
-                                                    console.log("file: ", file);
-                                                    if (!file) return;
+                                <form onSubmit={(e) => { handleDetailSubmit(e, index) }}>
 
-                                                    // lưu file
-                                                    setFiles((prev: any) => ({
-                                                        ...prev,
-                                                        [index]: file
-                                                    }));
-
-                                                    // tạo preview
-                                                    const url = URL.createObjectURL(file);
-                                                    console.log("url: ", url);
-                                                    setPreviews((prev) => ({
-                                                        ...prev,
-                                                        [index]: url
-                                                    }));
-                                                }}
-                                            />
-
-                                            <label htmlFor={`file-${index}`} className={styles.uploadBtn}>
-                                                Upload
-                                            </label>
-                                            <Button label="cancel" />
-                                        </div>
-
-                                        {
-                                            previews[index] && (
-                                                <div className={styles.imagePreview}>
-                                                    <img src={previews[index]} alt={"preview"} />
-                                                </div>
-                                            )
-                                        }
+                                    <div className="field">
+                                        <label htmlFor="name">Title</label>
+                                        <InputText id="name" type="text" value={education.title} onChange={(e) => handleEduChange(index, 'title', e.target.value)} />
                                     </div>
-                                    {education.thumbnail_url && (
-                                        <Image
-                                            src={education.thumbnail_url || '/placeholder.png'}
-                                            alt="Image"
-                                            width={100}
-                                            height={100}
-                                            className={styles.thumbnail}
-                                        />
-                                    )}
-                                </div>
+                                    <div className="field">
+                                        <label htmlFor="description">Detail</label>
+                                        <InputText id="description" type="text" value={education.detail} onChange={(e) => handleEduChange(index, 'detail', e.target.value)} />
+                                    </div>
+                                    <div className="field">
+                                        <label htmlFor="age_group">Age Group</label>
+                                        <InputText id="age_group" type="text" value={education.age_group} onChange={(e) => handleEduChange(index, 'age_group', e.target.value)} />
+                                    </div>
+                                    <div className="field">
+                                        <label htmlFor="duration_days">Duration Days</label>
+                                        <InputText id="duration_days" type="text" value={education.duration_days} onChange={(e) => handleEduChange(index, 'duration_days', e.target.value)} />
+                                    </div>
+                                    <div className="field">
+                                        <label htmlFor="duration_hours">Duration Hours</label>
+                                        <InputText id="duration_hours" type="text" value={education.duration_hours} onChange={(e) => handleEduChange(index, 'duration_hours', e.target.value)} />
+                                    </div>
+                                    <div className="field">
+                                        <label htmlFor="age1">Thumbnail</label>
+                                        <div className={styles.uploadContainer}>
+                                            <div className={styles.buttonsUpload}>
+
+                                                {/* upload image button */}
+                                                <div className={styles.btnContainer}>
+                                                    <input
+                                                        id={`file-${index}`}
+                                                        className={styles.hiddenInput}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0];
+                                                            console.log("file: ", file);
+                                                            if (!file) return;
+
+                                                            // save file to state
+                                                            setFiles((prev: any) => ({
+                                                                ...prev,
+                                                                [index]: file
+                                                            }));
+
+                                                            // show preview image
+                                                            const url = URL.createObjectURL(file);
+                                                            setPreviews((prev) => ({
+                                                                ...prev,
+                                                                [index]: url
+                                                            }));
+                                                        }}
+                                                    />
+
+                                                    <label htmlFor={`file-${index}`} className={styles.uploadBtn}>
+                                                        Upload
+                                                    </label>
+                                                </div>
+
+                                                {/* delete image upload button */}
+                                                <Button type="button" label="Cancel" onClick={() => handleDeleteImage(index)}></Button>
+                                            </div>
+
+                                            {
+                                                previews[index] && (
+                                                    <div className={clsx(styles.imagePreview, styles.previewImageContainer)}>
+                                                        <img src={previews[index]} alt={"preview"} />
+                                                    </div>
+                                                )
+                                            }
+                                        </div>
+                                        {education.thumbnail_url && (
+                                            <Image
+                                                src={education.thumbnail_url || '/placeholder.png'}
+                                                alt="Image"
+                                                width={100}
+                                                height={100}
+                                                className={styles.thumbnail}
+                                            />
+                                        )}
+                                    </div>
+                                    <Button type="submit" label="Submit" className={styles.buttonSubmit}></Button>
+                                </form>
                             </div>
                         </div>
                     )

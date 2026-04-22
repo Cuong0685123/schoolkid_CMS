@@ -31,12 +31,22 @@ type ProgramSport = {
     slug: string;
 }
 
+type ProgramTeacher = {
+    id: number;
+    program_id: number;
+    full_name: string;
+    profile_image_url: string;
+    role: string;
+    bio: string;
+}
+
 type Program = {
     name: string;
     type: string;
     description: string;
     ProgramEdus?: ProgramEdu[];
     ProgramSports?: ProgramSport[];
+    ProgramTeachers?: ProgramTeacher[];
 };
 
 const dropdownValues = [
@@ -51,14 +61,14 @@ export default function ProgramDetail() {
     const [files, setFiles] = useState<any>({});
     const [previews, setPreviews] = useState<Record<number, string>>({});
     const [loading, setLoading] = useState(false);
-    const [dropdownValue, setDropdownValue] = useState(null);
 
     const [formData, setFormData] = useState<Program>({
         name: '',
         type: '',
         description: '',
         ProgramEdus: [],
-        ProgramSports: []
+        ProgramSports: [],
+        ProgramTeachers: []
     });
 
     useEffect(() => {
@@ -72,7 +82,8 @@ export default function ProgramDetail() {
                     type: json.type,
                     description: json.description,
                     ProgramEdus: json.ProgramEdus || [],
-                    ProgramSports: json.ProgramSports || []
+                    ProgramSports: json.ProgramSports || [],
+                    ProgramTeachers: json.ProgramTeachers || []
                 });
             } catch (err) {
                 console.error(err);
@@ -90,6 +101,7 @@ export default function ProgramDetail() {
         }));
     };
 
+    // handle change for education
     const handleEduChange = (
         index: number,
         field: keyof ProgramEdu,
@@ -103,6 +115,7 @@ export default function ProgramDetail() {
         }));
     };
 
+    // handle change for sport
     const handleSportChange = (
         index: number,
         field: keyof ProgramSport,
@@ -111,6 +124,20 @@ export default function ProgramDetail() {
         setFormData(prev => ({
             ...prev,
             ProgramSports: prev.ProgramSports?.map((item, i) =>
+                i === index ? { ...item, [field]: value } : item
+            )
+        }));
+    };
+
+    // handle change for teacher
+    const handleTeacherChange = (
+        index: number,
+        field: keyof ProgramTeacher,
+        value: string
+    ) => {
+        setFormData(prev => ({
+            ...prev,
+            ProgramTeachers: prev.ProgramTeachers?.map((item, i) =>
                 i === index ? { ...item, [field]: value } : item
             )
         }));
@@ -214,6 +241,7 @@ export default function ProgramDetail() {
         }
     };
 
+    // handle submit detail form for sport
     const handleDetailSportSubmit = async (e: any, index: number) => {
         e.preventDefault();
         setLoading(true);
@@ -234,6 +262,51 @@ export default function ProgramDetail() {
             }
 
             const res = await fetch(`http://localhost:8080/api/programs/sport/${sportId}`, {
+                method: 'PUT',
+                body: form // ❗ KHÔNG set Content-Type
+            });
+
+            if (!res.ok) throw new Error('Update failed');
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Update detail thành công'
+            });
+
+        } catch (error) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Update detail thất bại'
+            });
+
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDetailTeacherSubmit = async (e: any, index: number) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const teacherId = formData.ProgramTeachers?.[index].id;
+            const teacher = formData.ProgramTeachers?.[index];
+            const file = files[index];
+
+            const form = new FormData();
+            // append data
+            form.append('full_name', teacher?.full_name || '');
+            form.append('role', teacher?.role || '');
+            form.append('bio', teacher?.bio || '');
+
+            if (file) {
+                form.append('profile_image_url', file);
+            }
+
+            const res = await fetch(`http://localhost:8080/api/programs/teacher/${teacherId}`, {
                 method: 'PUT',
                 body: form // ❗ KHÔNG set Content-Type
             });
@@ -408,20 +481,20 @@ export default function ProgramDetail() {
                                 <form onSubmit={(e) => { handleDetailSportSubmit(e, index) }}>
 
                                     <div className="field">
-                                        <label htmlFor="name">Title</label>
-                                        <InputText id="name" type="text" value={sport.title} onChange={(e) => {handleSportChange(index, "title", e.target.value)}} />
+                                        <label htmlFor="title">Title</label>
+                                        <InputText id="title" type="text" value={sport.title} onChange={(e) => {handleSportChange(index, "title", e.target.value)}} />
                                     </div>
                                     <div className="field">
-                                        <label htmlFor="description">Detail</label>
-                                        <InputText id="description" type="text" value={sport.detail} onChange={(e) => {handleSportChange(index, "detail", e.target.value)}} />
+                                        <label htmlFor="detail">Detail</label>
+                                        <InputText id="detail" type="text" value={sport.detail} onChange={(e) => {handleSportChange(index, "detail", e.target.value)}} />
                                     </div>
                                     <div className="field">
-                                        <label htmlFor="age_group">Slug</label>
-                                        <InputText id="age_group" type="text" value={sport.slug} onChange={(e) => {handleSportChange(index, "slug", e.target.value)}} />
+                                        <label htmlFor="slug">Slug</label>
+                                        <InputText id="slug" type="text" value={sport.slug} onChange={(e) => {handleSportChange(index, "slug", e.target.value)}} />
                                     </div>
                                     
                                     <div className="field">
-                                        <label htmlFor="age1">Thumbnail</label>
+                                        <label htmlFor="thumbnail">Thumbnail</label>
                                         <div className={styles.uploadContainer}>
                                             <div className={styles.buttonsUpload}>
 
@@ -472,6 +545,96 @@ export default function ProgramDetail() {
                                         {sport.thumbnail_url && (
                                             <Image
                                                 src={sport.thumbnail_url || '/placeholder.png'}
+                                                alt="Image"
+                                                width={100}
+                                                height={100}
+                                                className={styles.thumbnail}
+                                            />
+                                        )}
+                                    </div>
+                                    <Button type="submit" label="Submit" className={styles.buttonSubmit}></Button>
+                                </form>
+                            </div>
+                        </div>
+                    )
+                })
+            }
+
+            {/* Program Teacher */}
+            {
+                formData.type === "teacher" && formData.ProgramTeachers && formData.ProgramTeachers.length > 0 && formData.ProgramTeachers.map((teacher, index) => {
+                    return (
+                        <div key={index} className="col-12 md:col-12">
+                            <div className="card p-fluid">
+                                <Toast ref={toast}></Toast>
+                                <h5>{teacher.full_name}</h5>
+                                <form onSubmit={(e) => { handleDetailTeacherSubmit(e, index) }}>
+
+                                    <div className="field">
+                                        <label htmlFor="full_name">Full Name</label>
+                                        <InputText id="full_name" type="text" value={teacher.full_name} onChange={(e) => { handleTeacherChange(index, "full_name", e.target.value) }} />
+                                    </div>
+                                    <div className="field">
+                                        <label htmlFor="role">Role</label>
+                                        <InputText id="role" type="text" value={teacher.role} onChange={(e) => { handleTeacherChange(index, "role", e.target.value) }} />
+                                    </div>
+                                    <div className="field">
+                                        <label htmlFor="bio">Bio</label>
+                                        <InputText id="bio" type="text" value={teacher.bio} onChange={(e) => { handleTeacherChange(index, "bio", e.target.value) }} />
+                                    </div>
+                                    
+                                    <div className="field">
+                                        <label htmlFor="profile_image">Profile Image</label>
+                                        <div className={styles.uploadContainer}>
+                                            <div className={styles.buttonsUpload}>
+
+                                                {/* upload image button */}
+                                                <div className={styles.btnContainer}>
+                                                    <input
+                                                        id={`file-${index}`}
+                                                        className={styles.hiddenInput}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0];
+                                                            console.log("file: ", file);
+                                                            if (!file) return;
+
+                                                            // save file to state
+                                                            setFiles((prev: any) => ({
+                                                                ...prev,
+                                                                [index]: file
+                                                            }));
+
+                                                            // show preview image
+                                                            const url = URL.createObjectURL(file);
+                                                            setPreviews((prev) => ({
+                                                                ...prev,
+                                                                [index]: url
+                                                            }));
+                                                        }}
+                                                    />
+
+                                                    <label htmlFor={`file-${index}`} className={styles.uploadBtn}>
+                                                        Upload
+                                                    </label>
+                                                </div>
+
+                                                {/* delete image upload button */}
+                                                <Button type="button" label="Cancel" disabled={!previews[index]} onClick={() => handleDeleteImage(index)}/>
+                                            </div>
+
+                                            {
+                                                previews[index] && (
+                                                    <div className={clsx(styles.imagePreview, styles.previewImageContainer)}>
+                                                        <img src={previews[index]} alt={"preview"} />
+                                                    </div>
+                                                )
+                                            }
+                                        </div>
+                                        {teacher.profile_image_url && (
+                                            <Image
+                                                src={teacher.profile_image_url || '/placeholder.png'}
                                                 alt="Image"
                                                 width={100}
                                                 height={100}

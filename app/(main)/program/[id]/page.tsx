@@ -368,7 +368,7 @@ export default function ProgramDetail() {
                                                 </div>
 
                                                 {/* delete image upload button */}
-                                                <Button type="button" label="Cancel" onClick={() => handleDeleteImage(index)}></Button>
+                                                <Button type="button" label="Cancel" disabled={!previews[index]} onClick={() => handleDeleteImage(index)}></Button>
                                             </div>
 
                                             {
@@ -458,7 +458,7 @@ export default function ProgramDetail() {
                                                 </div>
 
                                                 {/* delete image upload button */}
-                                                <Button type="button" label="Cancel" onClick={() => handleDeleteImage(index)}></Button>
+                                                <Button type="button" label="Cancel" disabled={!previews[index]} onClick={() => handleDeleteImage(index)}/>
                                             </div>
 
                                             {

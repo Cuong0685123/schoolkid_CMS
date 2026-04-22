@@ -22,11 +22,21 @@ type ProgramEdu = {
     slug: string;
 };
 
+type ProgramSport = {
+    id: number;
+    program_id: number;
+    title: string;
+    detail: string;
+    thumbnail_url: string;
+    slug: string;
+}
+
 type Program = {
     name: string;
     type: string;
     description: string;
     ProgramEdus?: ProgramEdu[];
+    ProgramSports?: ProgramSport[];
 };
 
 const dropdownValues = [
@@ -47,7 +57,8 @@ export default function ProgramDetail() {
         name: '',
         type: '',
         description: '',
-        ProgramEdus: []
+        ProgramEdus: [],
+        ProgramSports: []
     });
 
     useEffect(() => {
@@ -60,7 +71,8 @@ export default function ProgramDetail() {
                     name: json.name,
                     type: json.type,
                     description: json.description,
-                    ProgramEdus: json.ProgramEdus || []
+                    ProgramEdus: json.ProgramEdus || [],
+                    ProgramSports: json.ProgramSports || []
                 });
             } catch (err) {
                 console.error(err);
@@ -230,6 +242,7 @@ export default function ProgramDetail() {
                 </div>
             </div>
 
+            {/* Program Education */}
             {
                 formData.ProgramEdus && formData.ProgramEdus.length > 0 && formData.ProgramEdus.map((education, index) => {
                     return (
@@ -311,6 +324,96 @@ export default function ProgramDetail() {
                                         {education.thumbnail_url && (
                                             <Image
                                                 src={education.thumbnail_url || '/placeholder.png'}
+                                                alt="Image"
+                                                width={100}
+                                                height={100}
+                                                className={styles.thumbnail}
+                                            />
+                                        )}
+                                    </div>
+                                    <Button type="submit" label="Submit" className={styles.buttonSubmit}></Button>
+                                </form>
+                            </div>
+                        </div>
+                    )
+                })
+            }
+
+            {/* Program Sport */}
+            {
+                formData.type === "sport" && formData.ProgramSports && formData.ProgramSports.length > 0 && formData.ProgramSports.map((sport, index) => {
+                    return (
+                        <div key={index} className="col-12 md:col-12">
+                            <div className="card p-fluid">
+                                <Toast ref={toast}></Toast>
+                                <h5>{sport.title}</h5>
+                                <form onSubmit={(e) => {  }}>
+
+                                    <div className="field">
+                                        <label htmlFor="name">Title</label>
+                                        <InputText id="name" type="text" value={sport.title} onChange={(e) => {}} />
+                                    </div>
+                                    <div className="field">
+                                        <label htmlFor="description">Detail</label>
+                                        <InputText id="description" type="text" value={sport.detail} onChange={(e) => {}} />
+                                    </div>
+                                    <div className="field">
+                                        <label htmlFor="age_group">Slug</label>
+                                        <InputText id="age_group" type="text" value={sport.slug} onChange={(e) => {}} />
+                                    </div>
+                                    
+                                    <div className="field">
+                                        <label htmlFor="age1">Thumbnail</label>
+                                        <div className={styles.uploadContainer}>
+                                            <div className={styles.buttonsUpload}>
+
+                                                {/* upload image button */}
+                                                <div className={styles.btnContainer}>
+                                                    <input
+                                                        id={`file-${index}`}
+                                                        className={styles.hiddenInput}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0];
+                                                            console.log("file: ", file);
+                                                            if (!file) return;
+
+                                                            // save file to state
+                                                            setFiles((prev: any) => ({
+                                                                ...prev,
+                                                                [index]: file
+                                                            }));
+
+                                                            // show preview image
+                                                            const url = URL.createObjectURL(file);
+                                                            setPreviews((prev) => ({
+                                                                ...prev,
+                                                                [index]: url
+                                                            }));
+                                                        }}
+                                                    />
+
+                                                    <label htmlFor={`file-${index}`} className={styles.uploadBtn}>
+                                                        Upload
+                                                    </label>
+                                                </div>
+
+                                                {/* delete image upload button */}
+                                                <Button type="button" label="Cancel" onClick={() => handleDeleteImage(index)}></Button>
+                                            </div>
+
+                                            {
+                                                previews[index] && (
+                                                    <div className={clsx(styles.imagePreview, styles.previewImageContainer)}>
+                                                        <img src={previews[index]} alt={"preview"} />
+                                                    </div>
+                                                )
+                                            }
+                                        </div>
+                                        {sport.thumbnail_url && (
+                                            <Image
+                                                src={sport.thumbnail_url || '/placeholder.png'}
                                                 alt="Image"
                                                 width={100}
                                                 height={100}

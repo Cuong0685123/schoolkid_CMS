@@ -54,6 +54,8 @@ const dropdownValues = [
     { name: 'teacher', code: 'teacher' }
 ];
 
+const TOAST_LIFE = 4000;
+
 const Program = () => {
     const toast = useRef<Toast>(null);
     const router = useRouter();
@@ -96,6 +98,20 @@ const Program = () => {
         profile_image_url: '',
     })
 
+    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const showToastAndRedirect = async (detail: string) => {
+        toast.current?.show({
+            severity: 'success',
+            summary: 'Success',
+            detail,
+            life: TOAST_LIFE
+        });
+
+        await delay(TOAST_LIFE);
+        router.push('/program');
+    };
+
     const handleEducationChange = (field: keyof ProgramEdu, value: string) => {
         console.log(field, value)
         setFormEducation(previous => ({
@@ -110,6 +126,30 @@ const Program = () => {
             ...previous,
             [field]: value
         }));
+    };
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        if (formData.type === 'edu') {
+            createEducationProgram(e);
+            return;
+        }
+
+        if (formData.type === 'sport') {
+            createSportProgram(e);
+            return;
+        }
+
+        if (formData.type === 'teacher') {
+            createTeacherProgram(e);
+            return;
+        }
+
+        e.preventDefault();
+        toast.current?.show({
+            severity: 'warn',
+            summary: 'Warning',
+            detail: 'Please select program type'
+        });
     };
 
     const handleTeacherChange = (field: keyof ProgramTeacher, value: string) => {
@@ -150,18 +190,13 @@ const Program = () => {
 
             if (!res.ok) throw new Error('Update failed');
 
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'Update detail thành công'
-            });
-
-            router.push('/program');
+            await showToastAndRedirect('Tạo education thành công');
         } catch (error) {
             toast.current?.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'Update detail thất bại'
+                detail: 'Tạo education thất bại',
+                life: TOAST_LIFE
             });
             console.error(error);
         } finally {
@@ -195,18 +230,13 @@ const Program = () => {
 
             if (!res.ok) throw new Error('Update failed');
 
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'Update detail thành công'
-            });
-
-            router.push('/program');
+            await showToastAndRedirect('Tạo sport thành công');
         } catch (error) {
             toast.current?.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'Update detail thất bại'
+                detail: 'Tạo sport thất bại',
+                life: TOAST_LIFE
             });
             console.error(error);
         } finally {
@@ -240,18 +270,13 @@ const Program = () => {
 
             if (!res.ok) throw new Error('Update failed');
 
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'Update detail thành công'
-            });
-
-            router.push('/program');
+            await showToastAndRedirect('Tạo teacher thành công');
         } catch (error) {
             toast.current?.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'Update detail thất bại'
+                detail: 'Tạo teacher thất bại',
+                life: TOAST_LIFE
             });
             console.error(error);
         } finally {
@@ -312,7 +337,7 @@ const Program = () => {
 
     return (
         <>
-            <Toast ref={toast} />
+            <Toast ref={toast} position="top-right" />
             <div className="col-12">
                 {
                     loading && (
@@ -337,7 +362,7 @@ const Program = () => {
                             placeholder="Select"
                         />
                     </div>
-                    <form onSubmit={(e) => { createTeacherProgram(e) }}>
+                    <form onSubmit={handleSubmit}>
                         {
                             formData.type === 'edu' && (
                                 <>

@@ -104,7 +104,16 @@ const Program = () => {
         }));
     };
 
-    const handleDetailEducationSubmit = async (e: any) => {
+    const handleSportChange = (field: keyof ProgramSport, value: string) => {
+        console.log(field, value)
+        setFormSport(previous => ({
+            ...previous,
+            [field]: value
+        }));
+    };
+
+    // create new Education Program
+    const createEducationProgram = async (e: any) => {
         e.preventDefault();
         setLoading(true);
 
@@ -118,6 +127,7 @@ const Program = () => {
             form.append('age_group', formEducation?.age_group || '');
             form.append('duration_days', formEducation?.duration_days || '');
             form.append('duration_hours', formEducation?.duration_hours || '');
+            form.append('slug', formEducation?.slug || '');
 
             // append file nếu có
             if (file) {
@@ -150,6 +160,52 @@ const Program = () => {
         }
     }
 
+    // create new Sport Program
+    const createSportProgram = async (e: any) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const form = new FormData();
+
+            // append data
+            form.append('program_id', formSport?.program_id.toString() || '');
+            form.append('title', formSport?.title || '');
+            form.append('detail', formSport?.detail || '');
+            form.append('slug', formSport?.slug || '');
+
+            // append file nếu có
+            if (file) {
+                form.append('thumbnail_url', file);
+            }
+
+            const res = await fetch(`http://localhost:8080/api/programs/sport`, {
+                method: 'POST',
+                body: form // ❗ KHÔNG set Content-Type
+            });
+
+            if (!res.ok) throw new Error('Update failed');
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Update detail thành công'
+            });
+
+            router.push('/program');
+        } catch (error) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Update detail thất bại'
+            });
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // fetch list Programs
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -227,7 +283,7 @@ const Program = () => {
                             placeholder="Select"
                         />
                     </div>
-                    <form onSubmit={(e) => { handleDetailEducationSubmit(e) }}>
+                    <form onSubmit={(e) => { createSportProgram(e) }}>
                         {
                             formData.type === 'edu' && (
                                 <>
@@ -313,19 +369,69 @@ const Program = () => {
                                 <>
                                     <div className="field">
                                         <label htmlFor="title">Title</label>
-                                        <InputText id="title" type="text" />
+                                        <InputText id="title" type="text" value={formSport.title} onChange={(e) => handleSportChange("title", e.target.value)}/>
                                     </div>
                                     <div className="field">
                                         <label htmlFor="detail">Detail</label>
-                                        <InputText id="detail" type="text" />
+                                        <InputText id="detail" type="text" value={formSport.detail} onChange={(e) => handleSportChange("detail", e.target.value)}/>
                                     </div>
                                     <div className="field">
-                                        <label htmlFor="duration_days">slug</label>
-                                        <InputText id="slug" type="text" />
+                                        <label htmlFor="slug">slug</label>
+                                        <InputText id="slug" type="text" value={formSport.slug} onChange={(e) => handleSportChange("slug", e.target.value)}/>
                                     </div>
                                     <div className="field">
-                                        <label htmlFor="thumbnail">thumbnail URL</label>
-                                        <InputText id="slug" type="text" />
+                                        <label htmlFor="thumbnail">Thumbnail</label>
+                                        <div className={styles.uploadContainer}>
+                                            <div className={styles.buttonsUpload}>
+
+                                                {/* upload image button */}
+                                                <div className={styles.btnContainer}>
+                                                    <input
+                                                        id={`file`}
+                                                        className={styles.hiddenInput}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (!file) return;
+                                                            setFile(file);
+                                                            const url = URL.createObjectURL(file);
+                                                            setPreview(url);
+                                                        }}
+                                                    />
+
+                                                    <label htmlFor={`file`} className={styles.uploadBtn}>
+                                                        Upload
+                                                    </label>
+                                                </div>
+
+                                                {/* delete image upload button */}
+                                                <Button type="button" label="Cancel" disabled={!preview}
+                                                    onClick={() => {
+                                                        setFile(undefined);
+                                                        setPreview(undefined);
+                                                        const input = document.getElementById('file') as HTMLInputElement;
+                                                        if (input) input.value = '';
+                                                    }} />
+                                            </div>
+
+                                            {
+                                                preview && (
+                                                    <div className={clsx(styles.imagePreview, styles.previewImageContainer)}>
+                                                        <img src={preview} alt={"preview"} />
+                                                    </div>
+                                                )
+                                            }
+                                        </div>
+                                        {/* {sport.thumbnail_url && (
+                                            <Image
+                                                src={sport.thumbnail_url || '/placeholder.png'}
+                                                alt="Image"
+                                                width={100}
+                                                height={100}
+                                                className={styles.thumbnail}
+                                            />
+                                        )} */}
                                     </div>
                                 </>
                             )

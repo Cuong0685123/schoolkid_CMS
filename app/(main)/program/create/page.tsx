@@ -112,6 +112,15 @@ const Program = () => {
         }));
     };
 
+    const handleTeacherChange = (field: keyof ProgramTeacher, value: string) => {
+        console.log(field, value)
+        setFormTeacher((previous) => ({
+            ...previous,
+            [field]: value
+        }));
+    };
+    
+
     // create new Education Program
     const createEducationProgram = async (e: any) => {
         e.preventDefault();
@@ -205,6 +214,51 @@ const Program = () => {
         }
     }
 
+    // create new Teacher Program
+    const createTeacherProgram = async (e: any) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const form = new FormData();
+
+            // append data
+            form.append('program_id', formTeacher?.program_id.toString() || '');
+            form.append('full_name', formTeacher?.full_name || '');
+            form.append('role', formTeacher?.role || '');
+            form.append('bio', formTeacher?.bio || '');
+
+            // append file nếu có
+            if (file) {
+                form.append('profile_image_url', file);
+            }
+
+            const res = await fetch(`http://localhost:8080/api/programs/teacher`, {
+                method: 'POST',
+                body: form // ❗ KHÔNG set Content-Type
+            });
+
+            if (!res.ok) throw new Error('Update failed');
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Update detail thành công'
+            });
+
+            router.push('/program');
+        } catch (error) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Update detail thất bại'
+            });
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     // fetch list Programs
     useEffect(() => {
         const fetchData = async () => {
@@ -216,22 +270,22 @@ const Program = () => {
                 const sportProgram = json.find((item) => item.type === 'sport');
                 const teacherProgram = json.find((item) => item.type === 'teacher');
 
-                if(educationProgram) {
-                    setFormEducation((previous)=>({
+                if (educationProgram) {
+                    setFormEducation((previous) => ({
                         ...previous,
                         program_id: educationProgram.id,
                     }))
                 }
 
-                if(sportProgram) {
-                    setFormSport((previous)=>({
+                if (sportProgram) {
+                    setFormSport((previous) => ({
                         ...previous,
                         program_id: sportProgram.id,
                     }))
                 }
 
-                if(teacherProgram) {
-                    setFormTeacher((previous)=>({
+                if (teacherProgram) {
+                    setFormTeacher((previous) => ({
                         ...previous,
                         program_id: teacherProgram.id,
                     }))
@@ -283,7 +337,7 @@ const Program = () => {
                             placeholder="Select"
                         />
                     </div>
-                    <form onSubmit={(e) => { createSportProgram(e) }}>
+                    <form onSubmit={(e) => { createTeacherProgram(e) }}>
                         {
                             formData.type === 'edu' && (
                                 <>
@@ -369,15 +423,15 @@ const Program = () => {
                                 <>
                                     <div className="field">
                                         <label htmlFor="title">Title</label>
-                                        <InputText id="title" type="text" value={formSport.title} onChange={(e) => handleSportChange("title", e.target.value)}/>
+                                        <InputText id="title" type="text" value={formSport.title} onChange={(e) => handleSportChange("title", e.target.value)} />
                                     </div>
                                     <div className="field">
                                         <label htmlFor="detail">Detail</label>
-                                        <InputText id="detail" type="text" value={formSport.detail} onChange={(e) => handleSportChange("detail", e.target.value)}/>
+                                        <InputText id="detail" type="text" value={formSport.detail} onChange={(e) => handleSportChange("detail", e.target.value)} />
                                     </div>
                                     <div className="field">
                                         <label htmlFor="slug">slug</label>
-                                        <InputText id="slug" type="text" value={formSport.slug} onChange={(e) => handleSportChange("slug", e.target.value)}/>
+                                        <InputText id="slug" type="text" value={formSport.slug} onChange={(e) => handleSportChange("slug", e.target.value)} />
                                     </div>
                                     <div className="field">
                                         <label htmlFor="thumbnail">Thumbnail</label>
@@ -440,20 +494,70 @@ const Program = () => {
                             formData.type === 'teacher' && (
                                 <>
                                     <div className="field">
-                                        <label htmlFor="title">Title</label>
-                                        <InputText id="title" type="text" />
+                                        <label htmlFor="full_name">Full Name</label>
+                                        <InputText id="full_name" type="text" value={formTeacher.full_name} onChange={(e) => handleTeacherChange("full_name", e.target.value)} />
                                     </div>
                                     <div className="field">
-                                        <label htmlFor="detail">Detail</label>
-                                        <InputText id="detail" type="text" />
+                                        <label htmlFor="role">Role</label>
+                                        <InputText id="role" type="text" value={formTeacher.role} onChange={(e) => handleTeacherChange("role", e.target.value)} />
                                     </div>
                                     <div className="field">
-                                        <label htmlFor="duration_days">slug</label>
-                                        <InputText id="slug" type="text" />
+                                        <label htmlFor="bio">Bio</label>
+                                        <InputText id="bio" type="text" value={formTeacher.bio} onChange={(e) => handleTeacherChange("bio", e.target.value)} />
                                     </div>
                                     <div className="field">
-                                        <label htmlFor="thumbnail">thumbnail URL</label>
-                                        <InputText id="slug" type="text" />
+                                        <label htmlFor="profile_image_url">Thumbnail</label>
+                                        <div className={styles.uploadContainer}>
+                                            <div className={styles.buttonsUpload}>
+
+                                                {/* upload image button */}
+                                                <div className={styles.btnContainer}>
+                                                    <input
+                                                        id={`file`}
+                                                        className={styles.hiddenInput}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (!file) return;
+                                                            setFile(file);
+                                                            const url = URL.createObjectURL(file);
+                                                            setPreview(url);
+                                                        }}
+                                                    />
+
+                                                    <label htmlFor={`file`} className={styles.uploadBtn}>
+                                                        Upload
+                                                    </label>
+                                                </div>
+
+                                                {/* delete image upload button */}
+                                                <Button type="button" label="Cancel" disabled={!preview}
+                                                    onClick={() => {
+                                                        setFile(undefined);
+                                                        setPreview(undefined);
+                                                        const input = document.getElementById('file') as HTMLInputElement;
+                                                        if (input) input.value = '';
+                                                    }} />
+                                            </div>
+
+                                            {
+                                                preview && (
+                                                    <div className={clsx(styles.imagePreview, styles.previewImageContainer)}>
+                                                        <img src={preview} alt={"preview"} />
+                                                    </div>
+                                                )
+                                            }
+                                        </div>
+                                        {/* {sport.thumbnail_url && (
+                                            <Image
+                                                src={sport.thumbnail_url || '/placeholder.png'}
+                                                alt="Image"
+                                                width={100}
+                                                height={100}
+                                                className={styles.thumbnail}
+                                            />
+                                        )} */}
                                     </div>
                                 </>
                             )

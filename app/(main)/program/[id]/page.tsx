@@ -337,8 +337,8 @@ export default function ProgramDetail() {
             <div className="col-12 md:col-12">
                 {
                     loading && (
-                        <div className={styles.overlay}>
-                            <ProgressSpinner className={styles.loader} style={{ width: '50px', height: '50px' }} strokeWidth="8" animationDuration=".5s" />
+                        <div className="overlay">
+                            <ProgressSpinner className="loader" style={{ width: '50px', height: '50px' }} strokeWidth="8" animationDuration=".5s" />
                         </div>
                     )
                 }
@@ -482,17 +482,17 @@ export default function ProgramDetail() {
 
                                     <div className="field">
                                         <label htmlFor="title">Title</label>
-                                        <InputText id="title" type="text" value={sport.title} onChange={(e) => {handleSportChange(index, "title", e.target.value)}} />
+                                        <InputText id="title" type="text" value={sport.title} onChange={(e) => { handleSportChange(index, "title", e.target.value) }} />
                                     </div>
                                     <div className="field">
                                         <label htmlFor="detail">Detail</label>
-                                        <InputText id="detail" type="text" value={sport.detail} onChange={(e) => {handleSportChange(index, "detail", e.target.value)}} />
+                                        <InputText id="detail" type="text" value={sport.detail} onChange={(e) => { handleSportChange(index, "detail", e.target.value) }} />
                                     </div>
                                     <div className="field">
                                         <label htmlFor="slug">Slug</label>
-                                        <InputText id="slug" type="text" value={sport.slug} onChange={(e) => {handleSportChange(index, "slug", e.target.value)}} />
+                                        <InputText id="slug" type="text" value={sport.slug} onChange={(e) => { handleSportChange(index, "slug", e.target.value) }} />
                                     </div>
-                                    
+
                                     <div className="field">
                                         <label htmlFor="thumbnail">Thumbnail</label>
                                         <div className={styles.uploadContainer}>
@@ -531,7 +531,7 @@ export default function ProgramDetail() {
                                                 </div>
 
                                                 {/* delete image upload button */}
-                                                <Button type="button" label="Cancel" disabled={!previews[index]} onClick={() => handleDeleteImage(index)}/>
+                                                <Button type="button" label="Cancel" disabled={!previews[index]} onClick={() => handleDeleteImage(index)} />
                                             </div>
 
                                             {
@@ -582,7 +582,7 @@ export default function ProgramDetail() {
                                         <label htmlFor="bio">Bio</label>
                                         <InputText id="bio" type="text" value={teacher.bio} onChange={(e) => { handleTeacherChange(index, "bio", e.target.value) }} />
                                     </div>
-                                    
+
                                     <div className="field">
                                         <label htmlFor="profile_image">Profile Image</label>
                                         <div className={styles.uploadContainer}>
@@ -621,7 +621,7 @@ export default function ProgramDetail() {
                                                 </div>
 
                                                 {/* delete image upload button */}
-                                                <Button type="button" label="Cancel" disabled={!previews[index]} onClick={() => handleDeleteImage(index)}/>
+                                                <Button type="button" label="Cancel" disabled={!previews[index]} onClick={() => handleDeleteImage(index)} />
                                             </div>
 
                                             {

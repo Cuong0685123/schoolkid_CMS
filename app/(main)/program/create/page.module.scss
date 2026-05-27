@@ -3,7 +3,6 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
-    border-bottom: 1px solid #ccc;
 
     .buttonsUpload {
         display: flex;
@@ -46,9 +45,3 @@
     height: auto;
     margin-top: 20px;
 }
-
-
-.buttonSubmit {
-    width: auto;
-}
-

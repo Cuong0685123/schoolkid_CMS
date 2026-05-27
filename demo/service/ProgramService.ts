@@ -17,7 +17,21 @@ export const getPrograms = async () => {
     return response.json()
 }
 
-export const createProgram = async () => {}
+export const createProgram = async (payload: FormData) => {
+    const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/programs`,
+        {
+            method: 'POST',
+            body: payload
+        }
+    )
+
+    if (!response.ok) {
+        throw new Error('Failed to create program')
+    }
+
+    return response.json()
+}
 
 export const updateProgram = async () => {}
 

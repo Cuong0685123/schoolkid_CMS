@@ -12,6 +12,11 @@ const AppMenu = () => {
                     icon: 'pi pi-fw pi-home',
                     to: '/program'
                 },
+                {
+                    label: 'create program',
+                    icon: 'pi pi-fw pi-home',
+                    to: '/program/create'
+                },
             ]
         },
         {

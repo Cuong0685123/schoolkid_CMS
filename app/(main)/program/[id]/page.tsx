@@ -9,6 +9,7 @@ import { Button } from 'primereact/button';
 import clsx from 'clsx';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Dropdown } from 'primereact/dropdown';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 type ProgramEdu = {
     id: number;
@@ -58,8 +59,8 @@ const dropdownValues = [
 export default function ProgramDetail() {
     const params = useParams();
     const toast = useRef<Toast | null>(null);
-    const [files, setFiles] = useState<any>({});
-    const [previews, setPreviews] = useState<Record<number, string>>({});
+    const [files, setFiles] = useState<Record<string, File | null>>({});
+    const [previews, setPreviews] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
 
     const [formData, setFormData] = useState<Program>({
@@ -70,6 +71,8 @@ export default function ProgramDetail() {
         ProgramSports: [],
         ProgramTeachers: []
     });
+
+    const getUploadKey = (itemType: 'education' | 'sport' | 'teacher', index: number) => `${itemType}-${index}`;
 
     useEffect(() => {
         const fetchData = async () => {
@@ -151,17 +154,74 @@ export default function ProgramDetail() {
     // }, [formData]);
 
     // delete image in upload
-    const handleDeleteImage = (index: number) => {
-        setFiles((prev: any) => ({
+    const handleDeleteImage = (uploadKey: string) => {
+        setFiles((prev) => ({
             ...prev,
-            [index]: null
+            [uploadKey]: null
         }));
 
         setPreviews((prev) => ({
             ...prev,
-            [index]: ""
+            [uploadKey]: ""
         }));
     }
+
+    const handleDeleteChild = async (
+        itemType: 'education' | 'sport' | 'teacher',
+        itemId: number
+    ) => {
+        setLoading(true);
+
+        try {
+            const res = await fetch(`http://localhost:8080/api/programs/${itemType}/${itemId}`, {
+                method: 'DELETE'
+            });
+
+            if (!res.ok) {
+                throw new Error('Delete failed');
+            }
+
+            setFormData((prev) => ({
+                ...prev,
+                ProgramEdus: itemType === 'education' ? prev.ProgramEdus?.filter((item) => item.id !== itemId) : prev.ProgramEdus,
+                ProgramSports: itemType === 'sport' ? prev.ProgramSports?.filter((item) => item.id !== itemId) : prev.ProgramSports,
+                ProgramTeachers: itemType === 'teacher' ? prev.ProgramTeachers?.filter((item) => item.id !== itemId) : prev.ProgramTeachers
+            }));
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Delete item thành công'
+            });
+        } catch (error) {
+            console.error(error);
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Delete item thất bại'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const confirmDeleteChild = (
+        itemType: 'education' | 'sport' | 'teacher',
+        itemId: number,
+        itemLabel: string
+    ) => {
+        confirmDialog({
+            message: `Bạn có chắc muốn xóa ${itemLabel}?`,
+            header: 'Xác nhận xóa',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-danger',
+            acceptLabel: 'Xóa',
+            rejectLabel: 'Hủy',
+            accept: () => {
+                void handleDeleteChild(itemType, itemId);
+            }
+        });
+    };
 
     // handle submit form
     const handleGeneralSubmit = async (e: any) => {
@@ -200,7 +260,7 @@ export default function ProgramDetail() {
         try {
             const educationId = formData.ProgramEdus?.[index].id;
             const edu = formData.ProgramEdus?.[index];
-            const file = files[index];
+            const file = files[getUploadKey('education', index)];
 
             const form = new FormData();
 
@@ -249,7 +309,7 @@ export default function ProgramDetail() {
         try {
             const sportId = formData.ProgramSports?.[index].id;
             const sport = formData.ProgramSports?.[index];
-            const file = files[index];
+            const file = files[getUploadKey('sport', index)];
 
             const form = new FormData();
             // append data
@@ -294,7 +354,7 @@ export default function ProgramDetail() {
         try {
             const teacherId = formData.ProgramTeachers?.[index].id;
             const teacher = formData.ProgramTeachers?.[index];
-            const file = files[index];
+            const file = files[getUploadKey('teacher', index)];
 
             const form = new FormData();
             // append data
@@ -334,6 +394,7 @@ export default function ProgramDetail() {
 
     return (
         <>
+            <ConfirmDialog />
             <div className="col-12 md:col-12">
                 {
                     loading && (
@@ -377,7 +438,7 @@ export default function ProgramDetail() {
             {
                 formData.ProgramEdus && formData.ProgramEdus.length > 0 && formData.ProgramEdus.map((education, index) => {
                     return (
-                        <div key={index} className="col-12 md:col-12">
+                        <div key={education.id} className="col-12 md:col-12">
                             <div className="card p-fluid">
                                 <Toast ref={toast}></Toast>
                                 <h5>{education.title}</h5>
@@ -417,20 +478,21 @@ export default function ProgramDetail() {
                                                         accept="image/*"
                                                         onChange={(e) => {
                                                             const file = e.target.files?.[0];
+                                                            const uploadKey = getUploadKey('education', index);
                                                             console.log("file: ", file);
                                                             if (!file) return;
 
                                                             // save file to state
-                                                            setFiles((prev: any) => ({
+                                                            setFiles((prev) => ({
                                                                 ...prev,
-                                                                [index]: file
+                                                                [uploadKey]: file
                                                             }));
 
                                                             // show preview image
                                                             const url = URL.createObjectURL(file);
                                                             setPreviews((prev) => ({
                                                                 ...prev,
-                                                                [index]: url
+                                                                [uploadKey]: url
                                                             }));
                                                         }}
                                                     />
@@ -441,13 +503,13 @@ export default function ProgramDetail() {
                                                 </div>
 
                                                 {/* delete image upload button */}
-                                                <Button type="button" label="Cancel" disabled={!previews[index]} onClick={() => handleDeleteImage(index)}></Button>
+                                                <Button type="button" label="Cancel" disabled={!previews[getUploadKey('education', index)]} onClick={() => handleDeleteImage(getUploadKey('education', index))}></Button>
                                             </div>
 
                                             {
-                                                previews[index] && (
+                                                previews[getUploadKey('education', index)] && (
                                                     <div className={clsx(styles.imagePreview, styles.previewImageContainer)}>
-                                                        <img src={previews[index]} alt={"preview"} />
+                                                        <img src={previews[getUploadKey('education', index)]} alt={"preview"} />
                                                     </div>
                                                 )
                                             }
@@ -462,7 +524,16 @@ export default function ProgramDetail() {
                                             />
                                         )}
                                     </div>
-                                    <Button type="submit" label="Submit" className={styles.buttonSubmit}></Button>
+                                    <div className="flex gap-2 justify-content-end">
+                                        <Button
+                                            type="button"
+                                            label="Delete"
+                                            severity="danger"
+                                            outlined
+                                            onClick={() => confirmDeleteChild('education', education.id, education.title)}
+                                        />
+                                        <Button type="submit" label="Submit" className={styles.buttonSubmit}></Button>
+                                    </div>
                                 </form>
                             </div>
                         </div>
@@ -474,7 +545,7 @@ export default function ProgramDetail() {
             {
                 formData.type === "sport" && formData.ProgramSports && formData.ProgramSports.length > 0 && formData.ProgramSports.map((sport, index) => {
                     return (
-                        <div key={index} className="col-12 md:col-12">
+                        <div key={sport.id} className="col-12 md:col-12">
                             <div className="card p-fluid">
                                 <Toast ref={toast}></Toast>
                                 <h5>{sport.title}</h5>
@@ -507,20 +578,21 @@ export default function ProgramDetail() {
                                                         accept="image/*"
                                                         onChange={(e) => {
                                                             const file = e.target.files?.[0];
+                                                            const uploadKey = getUploadKey('sport', index);
                                                             console.log("file: ", file);
                                                             if (!file) return;
 
                                                             // save file to state
-                                                            setFiles((prev: any) => ({
+                                                            setFiles((prev) => ({
                                                                 ...prev,
-                                                                [index]: file
+                                                                [uploadKey]: file
                                                             }));
 
                                                             // show preview image
                                                             const url = URL.createObjectURL(file);
                                                             setPreviews((prev) => ({
                                                                 ...prev,
-                                                                [index]: url
+                                                                [uploadKey]: url
                                                             }));
                                                         }}
                                                     />
@@ -531,13 +603,13 @@ export default function ProgramDetail() {
                                                 </div>
 
                                                 {/* delete image upload button */}
-                                                <Button type="button" label="Cancel" disabled={!previews[index]} onClick={() => handleDeleteImage(index)} />
+                                                <Button type="button" label="Cancel" disabled={!previews[getUploadKey('sport', index)]} onClick={() => handleDeleteImage(getUploadKey('sport', index))} />
                                             </div>
 
                                             {
-                                                previews[index] && (
+                                                previews[getUploadKey('sport', index)] && (
                                                     <div className={clsx(styles.imagePreview, styles.previewImageContainer)}>
-                                                        <img src={previews[index]} alt={"preview"} />
+                                                        <img src={previews[getUploadKey('sport', index)]} alt={"preview"} />
                                                     </div>
                                                 )
                                             }
@@ -552,7 +624,16 @@ export default function ProgramDetail() {
                                             />
                                         )}
                                     </div>
-                                    <Button type="submit" label="Submit" className={styles.buttonSubmit}></Button>
+                                    <div className="flex gap-2 justify-content-start">
+                                        <Button type="submit" label="Submit" className={styles.buttonSubmit}></Button>
+                                        <Button
+                                            type="button"
+                                            label="Delete"
+                                            severity="danger"
+                                            className={styles.buttonDelete}
+                                            onClick={() => confirmDeleteChild('sport', sport.id, sport.title)}
+                                        />
+                                    </div>
                                 </form>
                             </div>
                         </div>
@@ -564,7 +645,7 @@ export default function ProgramDetail() {
             {
                 formData.type === "teacher" && formData.ProgramTeachers && formData.ProgramTeachers.length > 0 && formData.ProgramTeachers.map((teacher, index) => {
                     return (
-                        <div key={index} className="col-12 md:col-12">
+                        <div key={teacher.id} className="col-12 md:col-12">
                             <div className="card p-fluid">
                                 <Toast ref={toast}></Toast>
                                 <h5>{teacher.full_name}</h5>
@@ -597,20 +678,21 @@ export default function ProgramDetail() {
                                                         accept="image/*"
                                                         onChange={(e) => {
                                                             const file = e.target.files?.[0];
+                                                            const uploadKey = getUploadKey('teacher', index);
                                                             console.log("file: ", file);
                                                             if (!file) return;
 
                                                             // save file to state
-                                                            setFiles((prev: any) => ({
+                                                            setFiles((prev) => ({
                                                                 ...prev,
-                                                                [index]: file
+                                                                [uploadKey]: file
                                                             }));
 
                                                             // show preview image
                                                             const url = URL.createObjectURL(file);
                                                             setPreviews((prev) => ({
                                                                 ...prev,
-                                                                [index]: url
+                                                                [uploadKey]: url
                                                             }));
                                                         }}
                                                     />
@@ -621,13 +703,13 @@ export default function ProgramDetail() {
                                                 </div>
 
                                                 {/* delete image upload button */}
-                                                <Button type="button" label="Cancel" disabled={!previews[index]} onClick={() => handleDeleteImage(index)} />
+                                                <Button type="button" label="Cancel" disabled={!previews[getUploadKey('teacher', index)]} onClick={() => handleDeleteImage(getUploadKey('teacher', index))} />
                                             </div>
 
                                             {
-                                                previews[index] && (
+                                                previews[getUploadKey('teacher', index)] && (
                                                     <div className={clsx(styles.imagePreview, styles.previewImageContainer)}>
-                                                        <img src={previews[index]} alt={"preview"} />
+                                                        <img src={previews[getUploadKey('teacher', index)]} alt={"preview"} />
                                                     </div>
                                                 )
                                             }
@@ -642,7 +724,16 @@ export default function ProgramDetail() {
                                             />
                                         )}
                                     </div>
-                                    <Button type="submit" label="Submit" className={styles.buttonSubmit}></Button>
+                                    <div className="flex gap-2 justify-content-end">
+                                        <Button
+                                            type="button"
+                                            label="Delete"
+                                            severity="danger"
+                                            outlined
+                                            onClick={() => confirmDeleteChild('teacher', teacher.id, teacher.full_name)}
+                                        />
+                                        <Button type="submit" label="Submit" className={styles.buttonSubmit}></Button>
+                                    </div>
                                 </form>
                             </div>
                         </div>

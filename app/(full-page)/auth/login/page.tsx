@@ -55,11 +55,11 @@ const Login: Page = () => {
             }
             document.cookie = `token=loggined; path=/; max-age=86400`;
             toast.current?.show({
-    severity: 'success',
-    summary: 'Login successful',
-    detail: 'Redirecting to dashboard...',
-    life: 2000
-});
+                severity: 'success',
+                summary: 'Login successful',
+                detail: 'Redirecting to dashboard...',
+                life: 2000
+            });
             router.push('/');
         } catch (error) {
             toast.current?.show({

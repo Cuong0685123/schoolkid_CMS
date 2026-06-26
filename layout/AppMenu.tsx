@@ -42,6 +42,11 @@ const AppMenu = () => {
                     label: 'promotional video',
                     icon: 'pi pi-fw pi-video',
                     to: '/promotional-video'
+                },
+                {
+                    label: 'site content',
+                    icon: 'pi pi-fw pi-globe',
+                    to: '/site-content'
                 }
             ]
         },

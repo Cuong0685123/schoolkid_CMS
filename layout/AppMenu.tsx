@@ -28,6 +28,11 @@ const AppMenu = () => {
                     icon: 'pi pi-fw pi-inbox',
                     to: '/applications'
                 },
+                {
+                    label: 'comments',
+                    icon: 'pi pi-fw pi-comments',
+                    to: '/comments'
+                }
             ]
         },
         {

@@ -32,6 +32,11 @@ const AppMenu = () => {
                     label: 'comments',
                     icon: 'pi pi-fw pi-comments',
                     to: '/comments'
+                },
+                {
+                    label: 'news articles',
+                    icon: 'pi pi-fw pi-file-edit',
+                    to: '/news-articles'
                 }
             ]
         },

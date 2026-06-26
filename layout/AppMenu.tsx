@@ -37,6 +37,11 @@ const AppMenu = () => {
                     label: 'news articles',
                     icon: 'pi pi-fw pi-file-edit',
                     to: '/news-articles'
+                },
+                {
+                    label: 'promotional video',
+                    icon: 'pi pi-fw pi-video',
+                    to: '/promotional-video'
                 }
             ]
         },
